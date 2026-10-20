@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include "Shader.h"
 #include "Texture.h"
+#include "Camera.h"
 
 class Sprite {
 public:
@@ -10,7 +11,7 @@ public:
     float rotation;
 
     Sprite(Texture* tex, float x, float y, float w, float h);
-    void draw(Shader& shader, int screenWidth, int screenHeight);
+    void draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight);
     ~Sprite();
 
 private:

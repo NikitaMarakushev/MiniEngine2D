@@ -9,10 +9,10 @@ Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
     : texture(tex), x(x), y(y), width(w), height(h), rotation(0) {
 
     float vertices[] = {
-         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f
+        0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
+       -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+       -0.5f,  0.5f, 0.0f,  0.0f, 1.0f
     };
 
     unsigned int indices[] = { 0, 1, 3, 1, 2, 3 };
@@ -38,13 +38,13 @@ Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
     glBindVertexArray(0);
 }
 
-void Sprite::draw(Shader& shader, int screenWidth, int screenHeight) {
+void Sprite::draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight) {
     float ndcX = (x / screenWidth) * 2.0f - 1.0f;
     float ndcY = 1.0f - (y / screenHeight) * 2.0f;
     float ndcW = (width / screenWidth) * 2.0f;
     float ndcH = (height / screenHeight) * 2.0f;
 
-    float rad = rotation * (float)M_PI / 180.0f;
+    float rad = rotation * 3.14159265358979323846f / 180.0f;
     float cosR = std::cos(rad);
     float sinR = std::sin(rad);
 
@@ -56,6 +56,7 @@ void Sprite::draw(Shader& shader, int screenWidth, int screenHeight) {
     };
 
     shader.setMat4("model", model);
+    shader.setMat4("view", camera.getViewMatrix());
 
     texture->bind(0);
     shader.use();
