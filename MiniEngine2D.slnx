@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="MiniEngine2D/MiniEngine2D.vcxproj" />
+  <Project Path="MiniEngine2D/MiniEngine2D.vcxproj" Id="552f90f5-3fb6-4f87-aace-fae7e0b28e1f" />
 </Solution>
