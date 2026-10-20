@@ -44,7 +44,7 @@ void Sprite::draw(Shader& shader, int screenWidth, int screenHeight) {
     float ndcW = (width / screenWidth) * 2.0f;
     float ndcH = (height / screenHeight) * 2.0f;
 
-    float rad = rotation * M_PI / 180.0f;
+    float rad = rotation * (float)M_PI / 180.0f;
     float cosR = std::cos(rad);
     float sinR = std::sin(rad);
 
