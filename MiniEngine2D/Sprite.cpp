@@ -6,7 +6,7 @@
 #endif
 
 Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
-    : texture(tex), x(x), y(y), width(w), height(h), rotation(0) {
+    : texture(tex), x(x), y(y), width(w), height(h), rotation(0), r(1.0f), g(1.0f), b(1.0f) {
 
     float vertices[] = {
         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
@@ -22,10 +22,8 @@ Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
@@ -36,6 +34,27 @@ Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void Sprite::setColor(float r, float g, float b) {
+    this->r = r;
+    this->g = g;
+    this->b = b;
+}
+
+bool Sprite::collidesWith(const Sprite& other) const {
+    float leftA = x - width / 2.0f;
+    float rightA = x + width / 2.0f;
+    float topA = y - height / 2.0f;
+    float bottomA = y + height / 2.0f;
+
+    float leftB = other.x - other.width / 2.0f;
+    float rightB = other.x + other.width / 2.0f;
+    float topB = other.y - other.height / 2.0f;
+    float bottomB = other.y + other.height / 2.0f;
+
+    return (leftA < rightB && rightA > leftB &&
+        topA < bottomB && bottomA > topB);
 }
 
 void Sprite::draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight) {
@@ -57,6 +76,7 @@ void Sprite::draw(Shader& shader, Camera& camera, int screenWidth, int screenHei
 
     shader.setMat4("model", model);
     shader.setMat4("view", camera.getViewMatrix());
+    shader.setVec3("tint", r, g, b);
 
     texture->bind(0);
     shader.use();

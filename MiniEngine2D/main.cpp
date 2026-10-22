@@ -17,7 +17,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Camera", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Collisions", NULL, NULL);
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
         return -1;
@@ -36,7 +36,6 @@ int main() {
     const int WORLD_HEIGHT = 2000;
 
     Sprite player(&tex, WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 128, 128);
-
     Camera camera(WORLD_WIDTH / 2 - 400, WORLD_HEIGHT / 2 - 300);
 
     std::vector<Sprite*> objects;
@@ -55,14 +54,10 @@ int main() {
         float dt = currentTime - lastTime;
         lastTime = currentTime;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            player.y -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            player.y += speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            player.x -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            player.x += speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) player.y -= speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) player.y += speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) player.x -= speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) player.x += speed * dt;
 
         if (player.x < 0) player.x = 0;
         if (player.y < 0) player.y = 0;
@@ -74,13 +69,27 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
+        bool isColliding = false;
+        for (Sprite* obj : objects) {
+            if (player.collidesWith(*obj)) {
+                isColliding = true;
+                break;
+            }
+        }
+
+        if (isColliding) {
+            player.setColor(1.0f, 0.2f, 0.2f);
+        }
+        else {
+            player.setColor(1.0f, 1.0f, 1.0f);
+        }
+
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         for (Sprite* obj : objects) {
             obj->draw(shader, camera, WORLD_WIDTH, WORLD_HEIGHT);
         }
-
         player.draw(shader, camera, WORLD_WIDTH, WORLD_HEIGHT);
 
         glfwSwapBuffers(window);

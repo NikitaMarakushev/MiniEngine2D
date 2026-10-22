@@ -9,9 +9,14 @@ public:
     float x, y;
     float width, height;
     float rotation;
+    float r, g, b;
 
     Sprite(Texture* tex, float x, float y, float w, float h);
+
     void draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight);
+    void setColor(float r, float g, float b);
+    bool collidesWith(const Sprite& other) const;
+
     ~Sprite();
 
 private:
