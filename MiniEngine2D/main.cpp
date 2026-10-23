@@ -4,8 +4,8 @@
 #include "Texture.h"
 #include "Sprite.h"
 #include "Camera.h"
+#include "TileMap.h"
 #include <iostream>
-#include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -17,7 +17,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Collisions", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - TileMap", NULL, NULL);
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
         return -1;
@@ -30,74 +30,57 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     Shader shader("sprite.vert", "sprite.frag");
-    Texture tex("texture.png");
+    Texture wallTex("texture.png");
+    Texture floorTex("texture.png");
+    Texture objTex("texture.png");
 
-    const int WORLD_WIDTH = 2000;
-    const int WORLD_HEIGHT = 2000;
+    TileMap level("level.txt", &wallTex, &floorTex, &objTex);
 
-    Sprite player(&tex, WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 128, 128);
-    Camera camera(WORLD_WIDTH / 2 - 400, WORLD_HEIGHT / 2 - 300);
+    float playerX = (level.width * level.tileSize) / 2.0f;
+    float playerY = (level.height * level.tileSize) / 2.0f;
+    Sprite player(&objTex, playerX, playerY, 48, 48);
+    player.setColor(1.0f, 1.0f, 0.0f);
 
-    std::vector<Sprite*> objects;
-    for (int i = 0; i < 50; i++) {
-        float x = (float)(rand() % WORLD_WIDTH);
-        float y = (float)(rand() % WORLD_HEIGHT);
-        float size = 32.0f + (float)(rand() % 96);
-        objects.push_back(new Sprite(&tex, x, y, size, size));
-    }
+    Camera camera(playerX - 400, playerY - 300);
 
     float lastTime = (float)glfwGetTime();
-    float speed = 300.0f;
+    float speed = 200.0f;
 
     while (!glfwWindowShouldClose(window)) {
         float currentTime = (float)glfwGetTime();
         float dt = currentTime - lastTime;
         lastTime = currentTime;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) player.y -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) player.y += speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) player.x -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) player.x += speed * dt;
+        float oldX = player.x;
+        float oldY = player.y;
 
-        if (player.x < 0) player.x = 0;
-        if (player.y < 0) player.y = 0;
-        if (player.x > WORLD_WIDTH) player.x = WORLD_WIDTH;
-        if (player.y > WORLD_HEIGHT) player.y = WORLD_HEIGHT;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            player.y -= speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            player.y += speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            player.x -= speed * dt;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            player.x += speed * dt;
+
+        if (level.isWall(player.x, player.y, player.width, player.height)) {
+            player.x = oldX;
+            player.y = oldY;
+        }
 
         camera.follow(player.x, player.y, 800, 600);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        bool isColliding = false;
-        for (Sprite* obj : objects) {
-            if (player.collidesWith(*obj)) {
-                isColliding = true;
-                break;
-            }
-        }
-
-        if (isColliding) {
-            player.setColor(1.0f, 0.2f, 0.2f);
-        }
-        else {
-            player.setColor(1.0f, 1.0f, 1.0f);
-        }
-
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (Sprite* obj : objects) {
-            obj->draw(shader, camera, WORLD_WIDTH, WORLD_HEIGHT);
-        }
-        player.draw(shader, camera, WORLD_WIDTH, WORLD_HEIGHT);
+        level.draw(shader, camera, 800, 600);
+        player.draw(shader, camera, 800, 600);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-    }
-
-    for (Sprite* obj : objects) {
-        delete obj;
     }
 
     glfwTerminate();
