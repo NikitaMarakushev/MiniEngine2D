@@ -66,4 +66,7 @@
     <None Include="sprite.vert" />
     <None Include="sprite.frag" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="level.txt" />
+  </ItemGroup>
 </Project>
