@@ -6,7 +6,10 @@
 #endif
 
 Sprite::Sprite(Texture* tex, float x, float y, float w, float h)
-    : texture(tex), x(x), y(y), width(w), height(h), rotation(0), r(1.0f), g(1.0f), b(1.0f) {
+    : texture(tex), x(x), y(y), width(w), height(h), rotation(0),
+    r(1.0f), g(1.0f), b(1.0f),
+    animated(false), currentFrame(0), totalFrames(1),
+    frameTime(0.2f), animationTimer(0.0f) {
 
     float vertices[] = {
         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
@@ -42,6 +45,24 @@ void Sprite::setColor(float r, float g, float b) {
     this->b = b;
 }
 
+void Sprite::setAnimation(int frames, float frameDuration) {
+    animated = true;
+    totalFrames = frames;
+    frameTime = frameDuration;
+    currentFrame = 0;
+    animationTimer = 0.0f;
+}
+
+void Sprite::updateAnimation(float dt) {
+    if (!animated) return;
+
+    animationTimer += dt;
+    if (animationTimer >= frameTime) {
+        animationTimer = 0.0f;
+        currentFrame = (currentFrame + 1) % totalFrames;
+    }
+}
+
 bool Sprite::collidesWith(const Sprite& other) const {
     float leftA = x - width / 2.0f;
     float rightA = x + width / 2.0f;
@@ -58,28 +79,39 @@ bool Sprite::collidesWith(const Sprite& other) const {
 }
 
 void Sprite::draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight) {
-    float ndcX = (x / screenWidth) * 2.0f - 1.0f;
-    float ndcY = 1.0f - (y / screenHeight) * 2.0f;
-    float ndcW = (width / screenWidth) * 2.0f;
-    float ndcH = (height / screenHeight) * 2.0f;
-
     float rad = rotation * 3.14159265358979323846f / 180.0f;
     float cosR = std::cos(rad);
     float sinR = std::sin(rad);
 
     float model[16] = {
-        ndcW * cosR,  ndcW * sinR,  0.0f, 0.0f,
-       -ndcH * sinR,  ndcH * cosR,  0.0f, 0.0f,
-        0.0f,         0.0f,         1.0f, 0.0f,
-        ndcX,         ndcY,         0.0f, 1.0f
+        width * cosR,   width * sinR,   0.0f, 0.0f,
+       -height * sinR,  height * cosR,  0.0f, 0.0f,
+        0.0f,           0.0f,           1.0f, 0.0f,
+        x,              y,              0.0f, 1.0f
     };
 
+    float uOffset = 0.0f;
+    if (animated && totalFrames > 1) {
+        uOffset = (float)currentFrame / (float)totalFrames;
+    }
+
+    float vertices[] = {
+        0.5f,  0.5f, 0.0f,  uOffset + 1.0f / totalFrames,  1.0f,
+        0.5f, -0.5f, 0.0f,  uOffset + 1.0f / totalFrames,  0.0f,
+       -0.5f, -0.5f, 0.0f,  uOffset,                       0.0f,
+       -0.5f,  0.5f, 0.0f,  uOffset,                       1.0f
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+    shader.use();
     shader.setMat4("model", model);
     shader.setMat4("view", camera.getViewMatrix());
+    shader.setMat4("projection", camera.getProjectionMatrix());
     shader.setVec3("tint", r, g, b);
 
     texture->bind(0);
-    shader.use();
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

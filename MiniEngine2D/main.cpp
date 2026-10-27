@@ -17,7 +17,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - TileMap", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Animation", NULL, NULL);
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
         return -1;
@@ -32,19 +32,22 @@ int main() {
     Shader shader("sprite.vert", "sprite.frag");
     Texture wallTex("texture.png");
     Texture floorTex("texture.png");
-    Texture objTex("texture.png");
+    Texture playerTex("player_sheet.png");
 
-    TileMap level("level.txt", &wallTex, &floorTex, &objTex);
+    TileMap level("level.txt", &wallTex, &floorTex, &playerTex);
 
     float playerX = (level.width * level.tileSize) / 2.0f;
     float playerY = (level.height * level.tileSize) / 2.0f;
-    Sprite player(&objTex, playerX, playerY, 48, 48);
-    player.setColor(1.0f, 1.0f, 0.0f);
+    Sprite player(&playerTex, playerX, playerY, 48, 48);
+    player.setColor(1.0f, 1.0f, 1.0f);
 
-    Camera camera(playerX - 400, playerY - 300);
+    player.setAnimation(4, 0.15f);
+
+    Camera camera(playerX - 400, playerY - 300, 800, 600);
 
     float lastTime = (float)glfwGetTime();
     float speed = 200.0f;
+    bool isMoving = false;
 
     while (!glfwWindowShouldClose(window)) {
         float currentTime = (float)glfwGetTime();
@@ -54,18 +57,34 @@ int main() {
         float oldX = player.x;
         float oldY = player.y;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        isMoving = false;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             player.y -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            isMoving = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
             player.y += speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            isMoving = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
             player.x -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            isMoving = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             player.x += speed * dt;
+            isMoving = true;
+        }
 
         if (level.isWall(player.x, player.y, player.width, player.height)) {
             player.x = oldX;
             player.y = oldY;
+        }
+
+        if (isMoving) {
+            player.updateAnimation(dt);
+        }
+        else {
+            player.currentFrame = 0;
         }
 
         camera.follow(player.x, player.y, 800, 600);
