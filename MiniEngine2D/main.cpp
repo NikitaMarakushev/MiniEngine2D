@@ -71,7 +71,7 @@ int main() {
                 if (tileType == 0) continue;
 
                 float px = x * level.tileSize + level.tileSize / 2.0f;
-                float py = y * level.tileSize + level.tileSize / 2.0f;
+                float py = (level.height - 1 - y) * level.tileSize + level.tileSize / 2.0f;
 
                 Texture* tex = nullptr;
                 float r = 1.0f, g = 1.0f, b = 1.0f;

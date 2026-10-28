@@ -3,7 +3,7 @@
 #include <iostream>
 
 Texture::Texture(const char* path) {
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
     unsigned char* data = stbi_load(path, &width, &height, nullptr, 4);
 
     glGenTextures(1, &ID);
