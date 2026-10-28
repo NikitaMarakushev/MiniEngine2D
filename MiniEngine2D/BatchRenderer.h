@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include "Shader.h"
 #include "Texture.h"
+#include "Camera.h"
 #include <vector>
 
 struct VertexData {
@@ -16,9 +17,12 @@ public:
     ~BatchRenderer();
 
     void begin();
+
     void drawSprite(Texture* tex, float x, float y, float width, float height,
+        float srcX, float srcY, float srcW, float srcH,
         float rotation = 0.0f, float r = 1.0f, float g = 1.0f, float b = 1.0f);
-    void end(Shader& shader);
+
+    void end(Shader& shader, Camera& camera);
 
 private:
     int maxSprites;

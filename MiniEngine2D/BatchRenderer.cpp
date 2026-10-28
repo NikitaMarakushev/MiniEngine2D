@@ -14,7 +14,6 @@ BatchRenderer::BatchRenderer(int maxSprites) : maxSprites(maxSprites), vertexCou
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, maxSprites * 4 * sizeof(VertexData), nullptr, GL_DYNAMIC_DRAW);
 
@@ -33,10 +32,8 @@ BatchRenderer::BatchRenderer(int maxSprites) : maxSprites(maxSprites), vertexCou
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
     glEnableVertexAttribArray(0);
-
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
@@ -49,6 +46,7 @@ void BatchRenderer::begin() {
 }
 
 void BatchRenderer::drawSprite(Texture* tex, float x, float y, float width, float height,
+    float srcX, float srcY, float srcW, float srcH,
     float rotation, float r, float g, float b) {
     if (vertexCount >= maxSprites * 4) return;
 
@@ -56,11 +54,24 @@ void BatchRenderer::drawSprite(Texture* tex, float x, float y, float width, floa
     float cosR = std::cos(rad);
     float sinR = std::sin(rad);
 
+    float texW = (float)tex->width;
+    float texH = (float)tex->height;
+
+    float u0 = srcX / texW;
+    float v0 = srcY / texH;
+    float u1 = (srcX + srcW) / texW;
+    float v1 = (srcY + srcH) / texH;
+
     float hw = width / 2.0f;
     float hh = height / 2.0f;
-
+\
     float corners[4][2] = {
         { -hw, -hh },{ hw, -hh },{ hw, hh },{ -hw, hh }
+    };
+
+    // UV для каждого угла
+    float uvs[4][2] = {
+        { u0, v0 },{ u1, v0 },{ u1, v1 },{ u0, v1 }
     };
 
     for (int i = 0; i < 4; i++) {
@@ -71,21 +82,18 @@ void BatchRenderer::drawSprite(Texture* tex, float x, float y, float width, floa
         v.x = px;
         v.y = py;
         v.z = 0.0f;
+        v.u = uvs[i][0];
+        v.v = uvs[i][1];
         v.r = r;
         v.g = g;
         v.b = b;
-
-        if (i == 0) { v.u = 0.0f; v.v = 0.0f; }
-        else if (i == 1) { v.u = 1.0f; v.v = 0.0f; }
-        else if (i == 2) { v.u = 1.0f; v.v = 1.0f; }
-        else { v.u = 0.0f; v.v = 1.0f; }
 
         vertices.push_back(v);
     }
     vertexCount += 4;
 }
 
-void BatchRenderer::end(Shader& shader) {
+void BatchRenderer::end(Shader& shader, Camera& camera) {
     if (vertexCount == 0) return;
 
     glBindVertexArray(VAO);
@@ -93,6 +101,9 @@ void BatchRenderer::end(Shader& shader) {
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(VertexData), vertices.data());
 
     shader.use();
+    shader.setMat4("view", camera.getViewMatrix());
+    shader.setMat4("projection", camera.getProjectionMatrix());
+
     glDrawElements(GL_TRIANGLES, vertexCount / 4 * 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }

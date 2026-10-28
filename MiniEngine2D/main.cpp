@@ -32,7 +32,7 @@ int main() {
     Shader shader("sprite.vert", "sprite.frag");
     Texture wallTex("texture.png");
     Texture floorTex("texture.png");
-    Texture playerTex("player_sheet.png");
+    Texture playerTex("texture.png");
 
     TileMap level("level.txt", &wallTex, &floorTex, &playerTex);
 
@@ -84,14 +84,32 @@ int main() {
                 }
 
                 if (tex) {
-                    batch.drawSprite(tex, px, py, level.tileSize, level.tileSize, 0.0f, r, g, b);
+                    batch.drawSprite(tex, px, py, level.tileSize, level.tileSize,
+                        0, 0, tex->width, tex->height, 0.0f, r, g, b);
                 }
             }
         }
 
-        batch.drawSprite(&playerTex, playerX, playerY, 48, 48, 0.0f, 1.0f, 1.0f, 1.0f);
+        float demoX = playerX + 100;
+        float demoY = playerY;
+        float frameSize = 64.0f;
 
-        batch.end(shader);
+        batch.drawSprite(&playerTex, demoX, demoY, frameSize, frameSize,
+            0, 0, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
+
+        batch.drawSprite(&playerTex, demoX + 80, demoY, frameSize, frameSize,
+            frameSize, 0, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
+
+        batch.drawSprite(&playerTex, demoX, demoY + 80, frameSize, frameSize,
+            0, frameSize, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
+
+        batch.drawSprite(&playerTex, demoX + 80, demoY + 80, frameSize, frameSize,
+            frameSize, frameSize, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
+
+        batch.drawSprite(&playerTex, playerX, playerY, 48, 48,
+            0, 0, playerTex.width, playerTex.height, 0.0f, 1.0f, 1.0f, 1.0f);
+
+        batch.end(shader, camera);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
