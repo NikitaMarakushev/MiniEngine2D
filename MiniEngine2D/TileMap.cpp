@@ -103,3 +103,10 @@ TileMap::~TileMap() {
         delete tile;
     }
 }
+
+int TileMap::getTile(int x, int y) const {
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        return 0;
+    }
+    return grid[y][x];
+}

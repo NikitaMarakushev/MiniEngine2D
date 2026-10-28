@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <Sprite.h>
+#include "Sprite.h"
 
 class TileMap {
 public:
@@ -12,6 +12,8 @@ public:
 
     void draw(Shader& shader, Camera& camera, int screenWidth, int screenHeight);
     bool isWall(float x, float y, float objWidth, float objHeight) const;
+
+    int getTile(int x, int y) const;
 
     ~TileMap();
 
