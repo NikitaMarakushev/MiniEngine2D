@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "TileMap.h"
 #include "BatchRenderer.h"
+#include "Animation.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -17,7 +18,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Batch Rendering", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Animation", NULL, NULL);
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
         return -1;
@@ -32,14 +33,15 @@ int main() {
     Shader shader("sprite.vert", "sprite.frag");
     Texture wallTex("texture.png");
     Texture floorTex("texture.png");
-    Texture playerTex("texture.png");
+    Texture playerTex("player_sheet.png");
+    Animation playerAnim(128, 128, 4, 8, 0.15f);
 
     TileMap level("level.txt", &wallTex, &floorTex, &playerTex);
 
     float playerX = (level.width * level.tileSize) / 2.0f;
     float playerY = (level.height * level.tileSize) / 2.0f;
-    Camera camera(playerX - 400, playerY - 300, 800, 600);
 
+    Camera camera(playerX - 400, playerY - 300, 800, 600);
     BatchRenderer batch(2000);
 
     float lastTime = (float)glfwGetTime();
@@ -56,6 +58,8 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) playerX += speed * dt;
 
         camera.follow(playerX, playerY, 800, 600);
+
+        playerAnim.Update(dt);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
@@ -77,7 +81,7 @@ int main() {
                 float r = 1.0f, g = 1.0f, b = 1.0f;
 
                 switch (tileType) {
-                case 1: tex = &wallTex; r = 0.5f; g = 0.5f; b = 0.5f; break;
+                case 1: tex = &wallTex;   r = 0.5f; g = 0.5f; b = 0.5f; break;
                 case 2: tex = &playerTex; r = 1.0f; g = 0.3f; b = 0.3f; break;
                 case 3: tex = &playerTex; r = 0.3f; g = 0.3f; b = 1.0f; break;
                 case 4: tex = &playerTex; r = 0.3f; g = 1.0f; b = 0.3f; break;
@@ -90,24 +94,12 @@ int main() {
             }
         }
 
-        float demoX = playerX + 100;
-        float demoY = playerY;
-        float frameSize = 64.0f;
+        int srcX, srcY, srcW, srcH;
+        playerAnim.GetSourceRect(srcX, srcY, srcW, srcH);
 
-        batch.drawSprite(&playerTex, demoX, demoY, frameSize, frameSize,
-            0, 0, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
-
-        batch.drawSprite(&playerTex, demoX + 80, demoY, frameSize, frameSize,
-            frameSize, 0, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
-
-        batch.drawSprite(&playerTex, demoX, demoY + 80, frameSize, frameSize,
-            0, frameSize, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
-
-        batch.drawSprite(&playerTex, demoX + 80, demoY + 80, frameSize, frameSize,
-            frameSize, frameSize, frameSize, frameSize, 0.0f, 1.0f, 1.0f, 1.0f);
-
-        batch.drawSprite(&playerTex, playerX, playerY, 48, 48,
-            0, 0, playerTex.width, playerTex.height, 0.0f, 1.0f, 1.0f, 1.0f);
+        batch.drawSprite(&playerTex, playerX, playerY, 64, 64,
+            srcX, srcY, srcW, srcH,
+            0.0f, 1.0f, 1.0f, 1.0f);
 
         batch.end(shader, camera);
 
