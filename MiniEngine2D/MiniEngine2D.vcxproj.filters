@@ -89,12 +89,11 @@
   <ItemGroup>
     <None Include="sprite.vert" />
     <None Include="sprite.frag" />
-    <None Include="README.md" />
+    <None Include="README.md">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="level.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="..\..\..\..\..\..\Videos\bird_fly.mp4" />
   </ItemGroup>
 </Project>
