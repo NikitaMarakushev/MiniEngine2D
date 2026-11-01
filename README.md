@@ -4,3 +4,5 @@
 ### Stack: c++, GLFW, GLAD, OpenGL 3.3, stb_image
 
 <video src="./bird_fly.mp4" width="100%" controls></video>
+<video src="[./bird_fly.mp4](https://github.com/NikitaMarakushev/MiniEngine2D/blob/master/bird_fly.mp4)" width="100%" controls></video>
+
