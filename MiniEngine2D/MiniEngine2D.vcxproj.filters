@@ -42,6 +42,9 @@
     <ClCompile Include="BatchRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\Downloads\stb_image.h">
@@ -71,6 +74,9 @@
     <ClInclude Include="Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="texture.png">
@@ -83,8 +89,12 @@
   <ItemGroup>
     <None Include="sprite.vert" />
     <None Include="sprite.frag" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="level.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\..\..\..\Videos\bird_fly.mp4" />
   </ItemGroup>
 </Project>

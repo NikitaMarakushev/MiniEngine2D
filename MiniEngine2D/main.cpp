@@ -6,6 +6,7 @@
 #include "TileMap.h"
 #include "BatchRenderer.h"
 #include "Animation.h"
+#include "ParticleSystem.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -18,7 +19,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Animation", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MiniEngine2D - Particles", NULL, NULL);
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
         return -1;
@@ -34,7 +35,10 @@ int main() {
     Texture wallTex("texture.png");
     Texture floorTex("texture.png");
     Texture playerTex("player_sheet.png");
+
     Animation playerAnim(128, 128, 4, 8, 0.15f);
+
+    ParticleSystem particles(500);
 
     TileMap level("level.txt", &wallTex, &floorTex, &playerTex);
 
@@ -52,14 +56,21 @@ int main() {
         float dt = currentTime - lastTime;
         lastTime = currentTime;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) playerY -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) playerY += speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) playerX -= speed * dt;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) playerX += speed * dt;
+        bool isMoving = false;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { playerY -= speed * dt; isMoving = true; }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { playerY += speed * dt; isMoving = true; }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { playerX -= speed * dt; isMoving = true; }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { playerX += speed * dt; isMoving = true; }
 
         camera.follow(playerX, playerY, 800, 600);
 
         playerAnim.Update(dt);
+
+        if (isMoving) {
+            particles.Emit(playerX, playerY, 2, 50.0f, 0.5f, 8.0f);
+        }
+
+        particles.Update(dt);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
@@ -97,9 +108,15 @@ int main() {
         int srcX, srcY, srcW, srcH;
         playerAnim.GetSourceRect(srcX, srcY, srcW, srcH);
 
-        batch.drawSprite(&playerTex, playerX, playerY, 64, 64,
+        batch.drawSprite(&playerTex, playerX, playerY, 128, 128,
             srcX, srcY, srcW, srcH,
             0.0f, 1.0f, 1.0f, 1.0f);
+
+        for (const auto& p : particles.GetParticles()) {
+            batch.drawSprite(&playerTex, p.x, p.y, p.size, p.size,
+                0, 0, 128, 128,
+                0.0f, p.r, p.g, p.b);
+        }
 
         batch.end(shader, camera);
 
